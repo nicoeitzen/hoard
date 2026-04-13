@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="HOARD"/>
+<meta name="theme-color" content="#ffffff"/>
+<title>HOARD</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --bg2: #f5f5f5;
+  --bg3: #ebebeb;
+  --text: #111111;
+  --text2: #666666;
+  --text3: #999999;
+  --border: rgba(0,0,0,0.12);
+  --border2: rgba(0,0,0,0.22);
+  --success-bg: #eaf3de;
+  --success-text: #3b6d11;
+  --warning-bg: #faeeda;
+  --warning-text: #854f0b;
+  --danger-bg: #fcebeb;
+  --danger-text: #a32d2d;
+  --info-bg: #e6f1fb;
+  --info-text: #185fa5;
+  --green: #3b6d11;
+  --green-light: #eaf3de;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a1a;
+    --bg2: #252525;
+    --bg3: #303030;
+    --text: #f0f0f0;
+    --text2: #aaaaaa;
+    --text3: #777777;
+    --border: rgba(255,255,255,0.12);
+    --border2: rgba(255,255,255,0.22);
+    --success-bg: #1a2e0f;
+    --success-text: #a3d977;
+    --warning-bg: #2e1f08;
+    --warning-text: #f5c26b;
+    --danger-bg: #2e0f0f;
+    --danger-text: #f08080;
+    --info-bg: #0d1f35;
+    --info-text: #7ab8f5;
+    --green: #7ecb3f;
+    --green-light: #1a2e0f;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text)}
+#app{display:flex;flex-direction:column;height:100%;padding-top:var(--safe-top)}
+
+/* header */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;background:var(--bg);border-bottom:0.5px solid var(--border);flex-shrink:0}
+.topbar h1{font-size:19px;font-weight:600;letter-spacing:-0.3px}
+.add-btn{padding:7px 14px;border-radius:20px;background:var(--text);color:var(--bg);border:none;font-size:13px;font-weight:600;cursor:pointer}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;flex-shrink:0}
+.stat{background:var(--bg2);border-radius:var(--radius);padding:10px 12px;text-align:center}
+.stat-num{font-size:22px;font-weight:600}
+.stat-label{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* tabs */
+.tabs{display:flex;gap:4px;padding:0 16px 10px;flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:7px 14px;border-radius:20px;border:0.5px solid var(--border);background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.tab.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+
+/* search */
+.search-wrap{padding:0 16px 10px;flex-shrink:0}
+.search{width:100%;padding:10px 14px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);font-size:15px}
+.search:focus{outline:none;border-color:var(--border2)}
+
+/* list */
+.list{flex:1;overflow-y:auto;padding:0 16px;padding-bottom:calc(16px + var(--safe-bottom))}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:10px;cursor:pointer;transition:background 0.1s}
+.card:active{background:var(--bg2)}
+.card-row{display:flex;align-items:center;gap:12px}
+.thumb{width:50px;height:50px;border-radius:10px;object-fit:cover;flex-shrink:0;border:0.5px solid var(--border)}
+.thumb-placeholder{width:50px;height:50px;border-radius:10px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:0.5px solid var(--border)}
+.card-info{flex:1;min-width:0}
+.card-title{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.card-badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-left:6px}
+.badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;white-space:nowrap}
+.badge-in{background:var(--success-bg);color:var(--success-text)}
+.badge-out{background:var(--warning-bg);color:var(--warning-text)}
+.badge-empty{background:var(--danger-bg);color:var(--danger-text)}
+.badge-low{background:var(--warning-bg);color:var(--warning-text)}
+.badge-cat{background:var(--bg2);color:var(--text2);border:0.5px solid var(--border)}
+.badge-supply{background:var(--green-light);color:var(--green)}
+
+/* qty bar */
+.qty-bar-wrap{margin-top:8px}
+.qty-bar-track{height:5px;border-radius:3px;background:var(--bg3);overflow:hidden}
+.qty-bar-fill{height:100%;border-radius:3px;transition:width 0.3s}
+.qty-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-top:4px}
+
+.empty{text-align:center;padding:50px 20px;color:var(--text2);font-size:15px}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;padding:20px 20px calc(20px + var(--safe-bottom));position:relative}
+.sheet-handle{width:36px;height:4px;background:var(--bg3);border-radius:2px;margin:0 auto 18px}
+.sheet h2{font-size:17px;font-weight:600;margin-bottom:16px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);font-size:15px;-webkit-appearance:none}
+.field input:focus,.field select:focus{outline:none;border-color:var(--border2)}
+.btn-row{display:flex;gap:8px;margin-top:16px}
+.btn{flex:1;padding:13px;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;border:0.5px solid var(--border2);background:transparent;color:var(--text)}
+.btn-primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-danger{color:var(--danger-text);border-color:var(--danger-text)}
+.btn:active{opacity:0.75}
+.btn:disabled{opacity:0.35;cursor:not-allowed}
+
+/* type toggle */
+.type-toggle{display:flex;gap:6px;margin-bottom:14px;background:var(--bg2);border-radius:var(--radius);padding:4px}
+.type-btn{flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text2);text-align:center}
+.type-btn.active{background:var(--bg);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+
+/* ai badge */
+.ai-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border-radius:20px;background:var(--info-bg);color:var(--info-text);margin-bottom:12px;font-weight:500}
+
+/* photo zone */
+.photo-zone{border:1.5px dashed var(--border2);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg2);min-height:160px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;position:relative;cursor:pointer}
+.photo-zone img,.photo-zone video{width:100%;display:block}
+.photo-placeholder{text-align:center;padding:24px;color:var(--text2);font-size:13px}
+.photo-btn-row{display:flex;gap:8px;margin-bottom:14px}
+.photo-btn{flex:1;padding:11px;border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border2);background:transparent;color:var(--text);display:flex;align-items:center;justify-content:center;gap:6px}
+.photo-btn:active{background:var(--bg2)}
+
+/* analyzing */
+.analyzing{display:flex;align-items:center;gap:8px;padding:10px 0;color:var(--text2);font-size:13px}
+.spinner{width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--text2);border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* stepper */
+.stepper{display:flex;align-items:center;border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.stepper-btn{width:46px;height:44px;border:none;background:var(--bg2);color:var(--text);font-size:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.stepper-input{flex:1;border:none;text-align:center;font-size:16px;font-weight:600;background:var(--bg);color:var(--text);height:44px;padding:0}
+.stepper-input:focus{outline:none}
+
+/* detail view */
+.detail{flex:1;overflow-y:auto;padding:0 16px;padding-bottom:calc(16px + var(--safe-bottom))}
+.detail-topbar{display:flex;align-items:center;gap:10px;padding:14px 16px 12px;border-bottom:0.5px solid var(--border);flex-shrink:0;background:var(--bg)}
+.back-btn{background:none;border:none;font-size:16px;color:var(--info-text);font-weight:600;cursor:pointer;padding:0;white-space:nowrap}
+.detail-title{flex:1;font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.detail-photo{width:100%;border-radius:var(--radius-lg);margin:14px 0;border:0.5px solid var(--border);display:block}
+.section-label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;margin:16px 0 8px}
+
+/* qty action card */
+.qty-card{background:var(--bg2);border-radius:var(--radius-lg);padding:16px;margin:14px 0}
+.qty-big{font-size:32px;font-weight:700;text-align:center}
+.qty-unit{font-size:13px;color:var(--text2);text-align:center;margin-bottom:12px}
+.qty-big-track{height:10px;border-radius:5px;background:var(--bg3);overflow:hidden;margin-bottom:14px}
+.qty-big-fill{height:100%;border-radius:5px;transition:width 0.4s}
+.qty-actions{display:flex;gap:8px}
+
+/* history */
+.h-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.h-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.h-text{font-size:13px;flex:1;color:var(--text)}
+.h-date{font-size:11px;color:var(--text2)}
+
+/* checkout info */
+.co-info{background:var(--bg2);border-radius:var(--radius);padding:13px;margin-bottom:12px}
+.co-info strong{display:block;font-size:15px;margin-bottom:2px}
+.co-info span{font-size:13px;color:var(--text2)}
+
+/* save toast */
+.toast{position:fixed;bottom:calc(24px + var(--safe-bottom));left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 18px;border-radius:20px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <h1>📦 HOARD</h1>
+    <button class="add-btn" onclick="openAdd()">+ Add item</button>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('all',this)">All</button>
+    <button class="tab" onclick="setTab('in',this)">Available</button>
+    <button class="tab" onclick="setTab('out',this)">Checked out</button>
+    <button class="tab" onclick="setTab('consumable',this)">Supplies</button>
+  </div>
+  <div class="search-wrap">
+    <input class="search" id="searchInput" placeholder="Search items..." oninput="render()"/>
+  </div>
+  <div class="list" id="list"><div class="empty">Loading…</div></div>
+</div>
+
+<!-- detail panel (hidden initially) -->
+<div id="detail-panel" style="display:none;flex-direction:column;height:100%;position:fixed;inset:0;background:var(--bg);z-index:100;padding-top:var(--safe-top)">
+  <div class="detail-topbar">
+    <button class="back-btn" onclick="closeDetail()">← Back</button>
+    <div class="detail-title" id="detail-title"></div>
+    <span id="detail-badge"></span>
+  </div>
+  <div class="detail" id="detail-body"></div>
+</div>
+
+<!-- modal overlay -->
+<div class="overlay" id="modal" style="display:none" onclick="handleOverlayClick(event)">
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle"></div>
+    <div id="sheet-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" onchange="handleFileInput(event)"/>
+
+<script>
+const CATS=['Tools','Sports','Holiday','Camping','Garden','Auto','Other'];
+const SUPPLY_CATS=['Soil & Compost','Seeds & Bulbs','Fertiliser','Pesticide & Weedkiller','Mulch','Sand & Grit','Other Supplies'];
+const UNITS=['bags','kg','L','packets','bottles','boxes','items'];
+const SK='garage-items-v5', NK='garage-nextid-v5';
+
+let items=[], nextId=1, currentTab='all', selectedId=null;
+let capturedB64=null, capturedMime=null, camStream=null, addingType='item';
+
+// ── STORAGE ──
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+function loadData(){
+  try{
+    const d=lsGet(SK); if(d) items=JSON.parse(d);
+    const n=lsGet(NK); if(n) nextId=parseInt(n);
+  }catch(e){items=[];nextId=1;}
+  if(!items.length) seedDefaults();
+  render();
+}
+
+function saveData(){
+  lsSet(SK,JSON.stringify(items));
+  lsSet(NK,String(nextId));
+  showToast('Saved');
+}
+
+function seedDefaults(){
+  items=[
+    {id:1,name:'Cordless drill',cat:'Tools',loc:'Shelf A2',status:'in',type:'item',photo:null,history:[{type:'in',date:'2025-12-01',note:'Added'}]},
+    {id:2,name:'Camping tent',cat:'Camping',loc:'Bin B1',status:'in',type:'item',photo:null,history:[]},
+    {id:3,name:'Lawn mower',cat:'Garden',loc:'Floor left',status:'in',type:'item',photo:null,history:[]},
+    {id:4,name:'Kayak paddle',cat:'Sports',loc:'Wall rack',status:'out',borrower:'Mike',dueDate:'2026-04-20',type:'item',photo:null,history:[{type:'out',date:'2026-04-01',note:'River trip'}]},
+    {id:5,name:'Tomato seeds',cat:'Seeds & Bulbs',loc:'Shed shelf',status:'in',type:'consumable',unit:'packets',qty:8,maxQty:10,photo:null,history:[{type:'restock',date:'2026-03-01',qty:10,note:'Spring restock'}]},
+    {id:6,name:'Peat-free compost',cat:'Soil & Compost',loc:'Outside shed',status:'in',type:'consumable',unit:'bags',qty:3,maxQty:8,photo:null,history:[{type:'restock',date:'2026-02-15',qty:8,note:'Bought 8 bags'}]},
+    {id:7,name:'Slow-release fertiliser',cat:'Fertiliser',loc:'Shelf B',status:'in',type:'consumable',unit:'kg',qty:1.5,maxQty:5,photo:null,history:[{type:'use',date:'2026-04-01',qty:0.5,note:'Lawn feed'}]},
+  ];
+  nextId=8;
+  lsSet(SK,JSON.stringify(items)); lsSet(NK,String(nextId));
+}
+
+// ── HELPERS ──
+function today(){return new Date().toISOString().slice(0,10);}
+function fmtDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+function pct(i){return i.maxQty>0?Math.max(0,Math.min(100,Math.round(i.qty/i.maxQty*100))):0;}
+function barColor(p){return p===0?'#E24B4A':p<=25?'#EF9F27':p<=50?'#BA7517':'#3B6D11';}
+function qtyStatus(i){const p=pct(i);return p===0?['empty','Empty']:p<=25?['low','Low']:['in','In stock'];}
+function catEmoji(c){return({'Tools':'🔧','Sports':'⚽','Holiday':'🎄','Camping':'⛺','Garden':'🌱','Auto':'🚗','Soil & Compost':'🪣','Seeds & Bulbs':'🌱','Fertiliser':'🌿','Pesticide & Weedkiller':'💧','Mulch':'🍂','Sand & Grit':'⛱','Other Supplies':'📦','Other':'📦'})[c]||'📦';}
+function fmtQty(v){return Number.isInteger(v)?v:parseFloat(v.toFixed(2));}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// ── TABS ──
+function setTab(t,el){
+  currentTab=t;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active'); render();
+}
+
+// ── RENDER ──
+function renderStats(){
+  const total=items.length, out=items.filter(i=>i.type==='item'&&i.status==='out').length;
+  const low=items.filter(i=>i.type==='consumable'&&pct(i)<=25).length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><div class="stat-num">${total}</div><div class="stat-label">Total</div></div>
+    <div class="stat"><div class="stat-num">${out}</div><div class="stat-label">Out</div></div>
+    <div class="stat"><div class="stat-num" style="${low>0?'color:var(--danger-text)':''}">${low}</div><div class="stat-label">Low / empty</div></div>`;
+}
+
+function render(){
+  renderStats();
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  let f=items.filter(i=>{
+    if(currentTab==='in'&&(i.type!=='item'||i.status!=='in'))return false;
+    if(currentTab==='out'&&(i.type!=='item'||i.status!=='out'))return false;
+    if(currentTab==='consumable'&&i.type!=='consumable')return false;
+    return i.name.toLowerCase().includes(q)||(i.cat||'').toLowerCase().includes(q)||(i.loc||'').toLowerCase().includes(q);
+  });
+  const el=document.getElementById('list');
+  if(!f.length){el.innerHTML='<div class="empty">No items found</div>';return;}
+  el.innerHTML=f.map(i=>i.type==='consumable'?consumableCard(i):itemCard(i)).join('');
+}
+
+function itemCard(i){
+  return`<div class="card" onclick="openDetail(${i.id})">
+    <div class="card-row">
+      ${i.photo?`<img class="thumb" src="${i.photo}"/>`:`<div class="thumb-placeholder">${catEmoji(i.cat)}</div>`}
+      <div class="card-info">
+        <div class="card-title">${i.name}</div>
+        <div class="card-sub">${i.loc}</div>
+      </div>
+      <div class="card-badges">
+        <span class="badge ${i.status==='in'?'badge-in':'badge-out'}">${i.status==='in'?'In storage':'Checked out'}</span>
+        <span class="badge badge-cat">${i.cat}</span>
+      </div>
+    </div>
+    ${i.status==='out'?`<div style="font-size:12px;color:var(--text2);margin-top:8px;margin-left:62px">By ${i.borrower}${i.dueDate?' · due '+fmtDate(i.dueDate):''}</div>`:''}
+  </div>`;
+}
+
+function consumableCard(i){
+  const p=pct(i); const[sk,sl]=qtyStatus(i);
+  return`<div class="card" onclick="openDetail(${i.id})">
+    <div class="card-row">
+      ${i.photo?`<img class="thumb" src="${i.photo}"/>`:`<div class="thumb-placeholder">${catEmoji(i.cat)}</div>`}
+      <div class="card-info">
+        <div class="card-title">${i.name}</div>
+        <div class="card-sub">${i.cat} · ${i.loc}</div>
+      </div>
+      <div class="card-badges">
+        <span class="badge badge-${sk}">${sl}</span>
+        <span class="badge badge-supply">Supply</span>
+      </div>
+    </div>
+    <div class="qty-bar-wrap">
+      <div class="qty-bar-track"><div class="qty-bar-fill" style="width:${p}%;background:${barColor(p)}"></div></div>
+      <div class="qty-row"><span>${fmtQty(i.qty)} ${i.unit} left</span><span>${p}%</span></div>
+    </div>
+  </div>`;
+}
+
+// ── DETAIL ──
+function openDetail(id){
+  selectedId=id;
+  const item=items.find(i=>i.id===id);
+  const panel=document.getElementById('detail-panel');
+  document.getElementById('detail-title').textContent=item.name;
+  if(item.type==='consumable'){
+    const[sk,sl]=qtyStatus(item);
+    document.getElementById('detail-badge').innerHTML=`<span class="badge badge-${sk}">${sl}</span>`;
+    renderConsumableDetail(item);
+  } else {
+    document.getElementById('detail-badge').innerHTML=`<span class="badge ${item.status==='in'?'badge-in':'badge-out'}">${item.status==='in'?'In storage':'Checked out'}</span>`;
+    renderItemDetail(item);
+  }
+  panel.style.display='flex';
+  panel.style.flexDirection='column';
+}
+
+function closeDetail(){
+  document.getElementById('detail-panel').style.display='none';
+  selectedId=null; render();
+}
+
+function renderItemDetail(item){
+  document.getElementById('detail-body').innerHTML=`
+    ${item.photo?`<img src="${item.photo}" class="detail-photo"/>`:''}
+    <div style="margin-top:14px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:4px">${item.cat} · ${item.loc}</div>
+      ${item.status==='in'
+        ?`<button class="btn btn-primary" style="width:100%;margin-bottom:10px" onclick="openCheckout(${item.id})">Check out</button>`
+        :`<div class="co-info"><strong>Checked out to ${item.borrower}</strong><span>Due: ${fmtDate(item.dueDate)||'No due date'}</span></div>
+          <button class="btn btn-primary" style="width:100%;margin-bottom:10px" onclick="checkIn(${item.id})">Check in</button>`}
+      <button class="btn" style="width:100%;margin-bottom:4px" onclick="openEdit(${item.id})">Edit item</button>
+      <div class="section-label">History</div>
+      ${historyHTML(item,'item')}
+    </div>`;
+}
+
+function renderConsumableDetail(item){
+  const p=pct(item);
+  document.getElementById('detail-body').innerHTML=`
+    ${item.photo?`<img src="${item.photo}" class="detail-photo"/>`:''}
+    <div class="qty-card">
+      <div class="qty-big">${fmtQty(item.qty)} <span style="font-size:17px;font-weight:400;color:var(--text2)">${item.unit}</span></div>
+      <div class="qty-unit">of ${fmtQty(item.maxQty)} ${item.unit} · ${p}% remaining</div>
+      <div class="qty-big-track"><div class="qty-big-fill" style="width:${p}%;background:${barColor(p)}"></div></div>
+      <div class="qty-actions">
+        <button class="btn" onclick="openUse(${item.id})">− Use</button>
+        <button class="btn btn-green" onclick="openRestock(${item.id})">+ Restock</button>
+      </div>
+    </div>
+    <button class="btn" style="width:100%;margin-bottom:4px" onclick="openEditSupply(${item.id})">Edit supply</button>
+    <div class="section-label">History</div>
+    ${historyHTML(item,'consumable')}`;
+}
+
+function historyHTML(item, type){
+  if(!item.history.length) return '<div style="padding:16px 0;color:var(--text2);font-size:14px;text-align:center">No history yet</div>';
+  return item.history.slice().reverse().map(h=>{
+    let dot='', label='';
+    if(type==='item'){dot=h.type==='in'?'#3B6D11':'#854F0B';label=h.type==='in'?'Checked in':'Checked out';}
+    else{dot=h.type==='restock'?'#3B6D11':'#185FA5';label=h.type==='restock'?`Restocked +${h.qty}`:`Used −${h.qty}`;}
+    return`<div class="h-item">
+      <div class="h-dot" style="background:${dot}"></div>
+      <div class="h-text">${label}${h.note?' · '+h.note:''}</div>
+      <div class="h-date">${fmtDate(h.date)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── MODAL ──
+function openModal(html){
+  document.getElementById('sheet-content').innerHTML=html;
+  document.getElementById('modal').style.display='flex';
+}
+function closeModal(){
+  stopCam(); capturedB64=null; capturedMime=null;
+  document.getElementById('modal').style.display='none';
+}
+function handleOverlayClick(e){if(e.target===document.getElementById('modal'))closeModal();}
+
+// ── ADD ITEM ──
+function openAdd(){
+  capturedB64=null; capturedMime=null; addingType='item';
+  openModal(`
+    <h2>Add new item</h2>
+    <div class="ai-badge">✦ AI photo identification</div>
+    <div class="photo-zone" id="pzone">
+      <div class="photo-placeholder">
+        <div style="font-size:32px;margin-bottom:8px">📷</div>
+        <div>Take or upload a photo<br>to auto-fill details</div>
+      </div>
+    </div>
+    <div class="photo-btn-row">
+      <button class="photo-btn" onclick="openCam()">📷 Camera</button>
+      <button class="photo-btn" onclick="document.getElementById('fileInput').click()">⬆ Upload</button>
+    </div>
+    <div class="type-toggle">
+      <button class="type-btn active" id="tbtn-item" onclick="switchType('item')">Storage item</button>
+      <button class="type-btn" id="tbtn-consumable" onclick="switchType('consumable')">Garden supply</button>
+    </div>
+    <div id="item-fields">
+      <div class="field"><label>Item name</label><input id="m-name" placeholder="e.g. Cordless drill"/></div>
+      <div class="field"><label>Category</label><select id="m-cat">${CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div class="field"><label>Storage location</label><input id="m-loc" placeholder="e.g. Shelf A2"/></div>
+    </div>
+    <div id="con-fields" style="display:none">
+      <div class="field"><label>Supply name</label><input id="c-name" placeholder="e.g. Peat-free compost"/></div>
+      <div class="field"><label>Category</label><select id="c-cat">${SUPPLY_CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div class="field"><label>Storage location</label><input id="c-loc" placeholder="e.g. Outside shed"/></div>
+      <div class="field"><label>Unit</label><select id="c-unit">${UNITS.map(u=>`<option>${u}</option>`).join('')}</select></div>
+      <div class="field"><label>Current quantity</label>${stepperEl('c-qty','0')}</div>
+      <div class="field"><label>Max / full quantity</label>${stepperEl('c-max','10')}</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="add-btn" onclick="addItem()">Add item</button>
+    </div>`);
+}
+
+function switchType(t){
+  addingType=t;
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tbtn-'+t).classList.add('active');
+  document.getElementById('item-fields').style.display=t==='item'?'block':'none';
+  document.getElementById('con-fields').style.display=t==='consumable'?'block':'none';
+}
+
+function stepperEl(id,val){
+  return`<div class="stepper">
+    <button class="stepper-btn" onclick="step('${id}',-1)">−</button>
+    <input class="stepper-input" id="${id}" type="number" value="${val}" min="0" step="0.5"/>
+    <button class="stepper-btn" onclick="step('${id}',1)">+</button>
+  </div>`;
+}
+function step(id,d){const e=document.getElementById(id);if(e)e.value=Math.max(0,parseFloat((parseFloat(e.value||0)+d).toFixed(1)));}
+
+function addItem(){
+  let newItem;
+  if(addingType==='consumable'){
+    const name=(document.getElementById('c-name').value||'').trim(); if(!name)return;
+    newItem={id:nextId++,name,cat:document.getElementById('c-cat').value,loc:(document.getElementById('c-loc').value||'Unassigned').trim(),status:'in',type:'consumable',unit:document.getElementById('c-unit').value,qty:parseFloat(document.getElementById('c-qty').value)||0,maxQty:parseFloat(document.getElementById('c-max').value)||10,photo:capturedB64?`data:${capturedMime};base64,${capturedB64}`:null,history:[{type:'restock',date:today(),qty:parseFloat(document.getElementById('c-qty').value)||0,note:'Added to inventory'}]};
+  } else {
+    const name=(document.getElementById('m-name').value||'').trim(); if(!name)return;
+    newItem={id:nextId++,name,cat:document.getElementById('m-cat').value,loc:(document.getElementById('m-loc').value||'Unassigned').trim(),status:'in',type:'item',photo:capturedB64?`data:${capturedMime};base64,${capturedB64}`:null,history:[{type:'in',date:today(),note:'Added to inventory'}]};
+  }
+  items.push(newItem); closeModal(); saveData(); render();
+}
+
+// ── EDIT ──
+function openEdit(id){
+  const i=items.find(x=>x.id===id);
+  openModal(`
+    <h2>Edit item</h2>
+    ${i.photo?`<img src="${i.photo}" style="width:100%;border-radius:var(--radius-lg);margin-bottom:12px"/>`:''}
+    <div class="field"><label>Name</label><input id="m-name" value="${i.name}"/></div>
+    <div class="field"><label>Category</label><select id="m-cat">${CATS.map(c=>`<option${c===i.cat?' selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="field"><label>Location</label><input id="m-loc" value="${i.loc}"/></div>
+    <div class="btn-row">
+      <button class="btn btn-danger" onclick="deleteItem(${id})">Delete</button>
+      <button class="btn btn-primary" onclick="saveEdit(${id})">Save</button>
+    </div>`);
+}
+
+function saveEdit(id){
+  const i=items.find(x=>x.id===id);
+  i.name=document.getElementById('m-name').value.trim()||i.name;
+  i.cat=document.getElementById('m-cat').value;
+  i.loc=document.getElementById('m-loc').value.trim()||i.loc;
+  closeModal(); saveData();
+  if(selectedId===id){openDetail(id);}else render();
+}
+
+function openEditSupply(id){
+  const i=items.find(x=>x.id===id);
+  openModal(`
+    <h2>Edit supply</h2>
+    <div class="field"><label>Name</label><input id="m-name" value="${i.name}"/></div>
+    <div class="field"><label>Category</label><select id="m-cat">${SUPPLY_CATS.map(c=>`<option${c===i.cat?' selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="field"><label>Location</label><input id="m-loc" value="${i.loc}"/></div>
+    <div class="field"><label>Unit</label><select id="m-unit">${UNITS.map(u=>`<option${u===i.unit?' selected':''}>${u}</option>`).join('')}</select></div>
+    <div class="btn-row">
+      <button class="btn btn-danger" onclick="deleteItem(${id})">Delete</button>
+      <button class="btn btn-primary" onclick="saveEditSupply(${id})">Save</button>
+    </div>`);
+}
+
+function saveEditSupply(id){
+  const i=items.find(x=>x.id===id);
+  i.name=document.getElementById('m-name').value.trim()||i.name;
+  i.cat=document.getElementById('m-cat').value;
+  i.loc=document.getElementById('m-loc').value.trim()||i.loc;
+  i.unit=document.getElementById('m-unit').value;
+  closeModal(); saveData(); openDetail(id);
+}
+
+function deleteItem(id){
+  items=items.filter(i=>i.id!==id);
+  closeModal(); closeDetail(); saveData();
+}
+
+// ── CHECK IN/OUT ──
+function openCheckout(id){
+  openModal(`
+    <h2>Check out item</h2>
+    <div class="field"><label>Borrower name</label><input id="m-bor" placeholder="Who is taking this?"/></div>
+    <div class="field"><label>Due back (optional)</label><input id="m-due" type="date" value="${today()}"/></div>
+    <div class="field"><label>Note (optional)</label><input id="m-note" placeholder="e.g. Weekend camping trip"/></div>
+    <div class="btn-row">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="checkOut(${id})">Check out</button>
+    </div>`);
+}
+
+function checkOut(id){
+  const bor=(document.getElementById('m-bor').value||'').trim(); if(!bor)return;
+  const i=items.find(x=>x.id===id);
+  i.status='out'; i.borrower=bor; i.dueDate=document.getElementById('m-due').value||null;
+  i.history.push({type:'out',date:today(),note:(document.getElementById('m-note').value||'').trim()});
+  closeModal(); saveData(); openDetail(id);
+}
+
+function checkIn(id){
+  const i=items.find(x=>x.id===id);
+  i.status='in'; i.borrower=null; i.dueDate=null;
+  i.history.push({type:'in',date:today(),note:'Returned to storage'});
+  saveData(); openDetail(id);
+}
+
+// ── USE / RESTOCK ──
+function openUse(id){
+  const i=items.find(x=>x.id===id);
+  openModal(`
+    <h2>Log usage — ${i.name}</h2>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Currently: ${fmtQty(i.qty)} ${i.unit}</div>
+    <div class="field"><label>Amount used</label>${stepperEl('u-qty','1')}</div>
+    <div class="field"><label>Note (optional)</label><input id="u-note" placeholder="e.g. Potted tomatoes"/></div>
+    <div class="btn-row">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="applyUse(${id})">Confirm</button>
+    </div>`);
+}
+
+function applyUse(id){
+  const i=items.find(x=>x.id===id);
+  const used=parseFloat(document.getElementById('u-qty').value)||0;
+  i.qty=Math.max(0,parseFloat((i.qty-used).toFixed(2)));
+  i.history.push({type:'use',date:today(),qty:used,note:(document.getElementById('u-note').value||'').trim()});
+  closeModal(); saveData(); openDetail(id);
+}
+
+function openRestock(id){
+  const i=items.find(x=>x.id===id);
+  openModal(`
+    <h2>Restock — ${i.name}</h2>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Currently: ${fmtQty(i.qty)} · max: ${fmtQty(i.maxQty)} ${i.unit}</div>
+    <div class="field"><label>Amount added</label>${stepperEl('r-qty','1')}</div>
+    <div class="field"><label>Update max quantity</label>${stepperEl('r-max',String(i.maxQty))}</div>
+    <div class="field"><label>Note (optional)</label><input id="r-note" placeholder="e.g. Bought 5 bags"/></div>
+    <div class="btn-row">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="applyRestock(${id})">Restock</button>
+    </div>`);
+}
+
+function applyRestock(id){
+  const i=items.find(x=>x.id===id);
+  const added=parseFloat(document.getElementById('r-qty').value)||0;
+  const newMax=parseFloat(document.getElementById('r-max').value)||i.maxQty;
+  i.maxQty=newMax; i.qty=Math.min(newMax,parseFloat((i.qty+added).toFixed(2)));
+  i.history.push({type:'restock',date:today(),qty:added,note:(document.getElementById('r-note').value||'').trim()});
+  closeModal(); saveData(); openDetail(id);
+}
+
+// ── CAMERA ──
+async function openCam(){
+  const z=document.getElementById('pzone'); if(!z)return;
+  if(!navigator.mediaDevices){z.innerHTML='<div class="photo-placeholder" style="color:var(--danger-text)">Camera not available — use Upload</div>';return;}
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    z.innerHTML=`<video id="camvid" autoplay playsinline style="width:100%"></video>
+      <button onclick="snapPhoto()" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;background:white;border:3px solid #ddd;font-size:24px;cursor:pointer">📷</button>`;
+    document.getElementById('camvid').srcObject=camStream;
+  }catch(e){z.innerHTML='<div class="photo-placeholder" style="color:var(--danger-text)">Camera access denied — tap Upload instead</div>';}
+}
+
+function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
+
+function snapPhoto(){
+  const v=document.getElementById('camvid'); if(!v)return;
+  const c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0); stopCam();
+  const url=c.toDataURL('image/jpeg',0.82);
+  capturedB64=url.split(',')[1]; capturedMime='image/jpeg';
+  showPhoto(url); analyzePhoto();
+}
+
+function handleFileInput(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{const url=ev.target.result;capturedB64=url.split(',')[1];capturedMime=f.type||'image/jpeg';showPhoto(url);analyzePhoto();};
+  r.readAsDataURL(f); e.target.value='';
+}
+
+function showPhoto(url){
+  const z=document.getElementById('pzone');
+  if(z)z.innerHTML=`<img src="${url}" style="width:100%"/>`;
+}
+
+// ── AI IDENTIFY ──
+async function analyzePhoto(){
+  if(!capturedB64)return;
+  setEnabled(false);
+  const z=document.getElementById('pzone');
+  const div=document.createElement('div'); div.className='analyzing'; div.id='ai-status';
+  div.innerHTML='<div class="spinner"></div> Identifying item…';
+  if(z&&z.parentNode)z.after(div);
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:300,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:capturedMime,data:capturedB64}},
+          {type:'text',text:`Identify this garage or garden storage item. Reply ONLY with JSON (no markdown, no backticks):
+{"name":"short item name","type":"item OR consumable","cat":"one of: Tools,Sports,Holiday,Camping,Garden,Auto,Other,Soil & Compost,Seeds & Bulbs,Fertiliser,Pesticide & Weedkiller,Mulch,Sand & Grit,Other Supplies","unit":"bags OR kg OR L OR packets OR bottles OR boxes OR items (only for consumable)","loc":"suggested storage spot","confidence":"high OR medium OR low"}`}
+        ]}]
+      })
+    });
+    const data=await res.json();
+    const txt=(data.content||[]).map(b=>b.text||'').join('').trim();
+    const p=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    if(p.type==='consumable'){
+      switchType('consumable');
+      const cn=document.getElementById('c-name'); if(cn)cn.value=p.name||'';
+      const cl=document.getElementById('c-loc'); if(cl)cl.value=p.loc||'';
+      if(p.unit){const s=document.getElementById('c-unit');if(s)for(let o of s.options)if(o.value===p.unit){o.selected=true;break;}}
+      if(p.cat){const s=document.getElementById('c-cat');if(s)for(let o of s.options)if(o.value===p.cat){o.selected=true;break;}}
+    } else {
+      switchType('item');
+      const mn=document.getElementById('m-name'); if(mn)mn.value=p.name||'';
+      const ml=document.getElementById('m-loc'); if(ml)ml.value=p.loc||'';
+      if(p.cat){const s=document.getElementById('m-cat');if(s)for(let o of s.options)if(o.value===p.cat){o.selected=true;break;}}
+    }
+    const st=document.getElementById('ai-status');
+    if(st)st.innerHTML=`<span style="color:var(--success-text)">✓ Identified · ${p.confidence} confidence — review &amp; confirm</span>`;
+  }catch(e){
+    const st=document.getElementById('ai-status');
+    if(st)st.innerHTML='<span style="color:var(--text2)">Could not identify — please fill in manually</span>';
+  }
+  setEnabled(true);
+}
+
+function setEnabled(on){
+  ['m-name','m-cat','m-loc','c-name','c-cat','c-loc','c-unit','add-btn'].forEach(id=>{
+    const e=document.getElementById(id); if(e)e.disabled=!on;
+  });
+}
+
+// ── INIT ──
+loadData();
+</script>
+</body>
+</html>
