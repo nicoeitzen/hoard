@@ -183,8 +183,13 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 /* save toast */
 .toast{position:fixed;bottom:calc(24px + var(--safe-bottom));left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 18px;border-radius:20px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
+.cat-filters{display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.cat-filters::-webkit-scrollbar{display:none}
+.cat-pill{display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:20px;border:0.5px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.cat-pill.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.filter-info{font-size:12px;color:var(--text3);padding:0 16px 6px;display:flex;align-items:center;gap:6px}
+.filter-clear{background:none;border:none;color:var(--info-text);font-size:12px;cursor:pointer;padding:0}
 </style>
-</head>
 <body>
 <div id="app">
   <div class="topbar">
@@ -201,6 +206,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
   <div class="search-wrap">
     <input class="search" id="searchInput" placeholder="Search items..." oninput="render()"/>
   </div>
+  <div class="cat-filters" id="catFilters"></div>
+  <div class="filter-info" id="filterInfo" style="display:none"></div>
   <div class="list" id="list"><div class="empty">Loading…</div></div>
 </div>
 
@@ -231,7 +238,7 @@ const SUPPLY_CATS=['Soil & Compost','Seeds & Bulbs','Fertiliser','Pesticide & We
 const UNITS=['bags','kg','L','packets','bottles','boxes','items'];
 const SK='garage-items-v5', NK='garage-nextid-v5';
 
-let items=[], nextId=1, currentTab='all', selectedId=null;
+let items=[], nextId=1, currentTab='all', selectedId=null, catFilter='All';
 let capturedB64=null, capturedMime=null, camStream=null, addingType='item';
 
 // ── STORAGE ──
@@ -284,7 +291,7 @@ function showToast(msg){
 
 // ── TABS ──
 function setTab(t,el){
-  currentTab=t;
+  currentTab=t; catFilter='All';
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   el.classList.add('active'); render();
 }
@@ -302,15 +309,47 @@ function renderStats(){
 function render(){
   renderStats();
   const q=document.getElementById('searchInput').value.toLowerCase();
+
+  // Build active cats for current tab
+  const tabItems=items.filter(i=>{
+    if(currentTab==='in') return i.type==='item'&&i.status==='in';
+    if(currentTab==='out') return i.type==='item'&&i.status==='out';
+    if(currentTab==='consumable') return i.type==='consumable';
+    return true;
+  });
+  const activeCats=['All',...[...new Set(tabItems.map(i=>i.cat))].sort()];
+
+  // Render category pills
+  const cf=document.getElementById('catFilters');
+  if(activeCats.length>2){
+    cf.innerHTML=activeCats.map(c=>`
+      <button class="cat-pill${catFilter===c?' active':''}" onclick="setCatFilter('${c}')">
+        ${c!=='All'?`<span style="font-size:13px">${catEmoji(c)}</span>`:''}${c}
+      </button>`).join('');
+    cf.style.display='flex';
+  } else { cf.style.display='none'; }
+
+  // Filter info bar
+  const fi=document.getElementById('filterInfo');
+  if(catFilter!=='All'){
+    fi.style.display='flex';
+    fi.innerHTML=`Showing <strong style="color:var(--text2)">${catEmoji(catFilter)} ${catFilter}</strong> <button class="filter-clear" onclick="setCatFilter('All')">✕ Clear</button>`;
+  } else { fi.style.display='none'; }
+
   let f=items.filter(i=>{
     if(currentTab==='in'&&(i.type!=='item'||i.status!=='in'))return false;
     if(currentTab==='out'&&(i.type!=='item'||i.status!=='out'))return false;
     if(currentTab==='consumable'&&i.type!=='consumable')return false;
+    if(catFilter!=='All'&&i.cat!==catFilter)return false;
     return i.name.toLowerCase().includes(q)||(i.cat||'').toLowerCase().includes(q)||(i.loc||'').toLowerCase().includes(q);
   });
   const el=document.getElementById('list');
   if(!f.length){el.innerHTML='<div class="empty">No items found</div>';return;}
   el.innerHTML=f.map(i=>i.type==='consumable'?consumableCard(i):itemCard(i)).join('');
+}
+
+function setCatFilter(cat){
+  catFilter=cat; render();
 }
 
 function itemCard(i){
